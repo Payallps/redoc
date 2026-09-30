@@ -17,6 +17,70 @@ describe('Components', () => {
       options,
     );
 
+    describe('Object description', () => {
+      it('should render the description of a top-level object schema', () => {
+        const schema = new SchemaModel(
+          parser,
+          {
+            type: 'object',
+            description: 'Top-level object description',
+            properties: { name: { type: 'string' } },
+          },
+          '',
+          options,
+        );
+        const html = shallow(withTheme(<Schema schema={schema} />)).html();
+        expect(html.includes('Top-level object description')).toBe(true);
+      });
+
+      it('should render the description of the selected oneOf variant', () => {
+        const schema = new SchemaModel(
+          parser,
+          {
+            oneOf: [
+              {
+                type: 'object',
+                title: 'First',
+                description: 'First variant description',
+                properties: { a: { type: 'string' } },
+              },
+              {
+                type: 'object',
+                title: 'Second',
+                description: 'Second variant description',
+                properties: { b: { type: 'string' } },
+              },
+            ],
+          },
+          '',
+          options,
+        );
+        const html = shallow(withTheme(<Schema schema={schema} />)).html();
+        expect(html.includes('First variant description')).toBe(true);
+        expect(html.includes('Second variant description')).toBe(false);
+      });
+
+      it('should render a nested object description only once, in its field row', () => {
+        const schema = new SchemaModel(
+          parser,
+          {
+            type: 'object',
+            properties: {
+              address: {
+                type: 'object',
+                description: 'Nested object description',
+                properties: { street: { type: 'string' } },
+              },
+            },
+          },
+          '',
+          options,
+        );
+        const html = shallow(withTheme(<Schema schema={schema} />)).html();
+        expect(html.split('Nested object description').length - 1).toBe(1);
+      });
+    });
+
     describe('Show minProperties/maxProperties constraints', () => {
       const schema = new SchemaModel(
         parser,
