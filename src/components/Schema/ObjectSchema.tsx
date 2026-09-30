@@ -5,6 +5,7 @@ import { SchemaModel } from '../../services/models';
 
 import { PropertiesTable, PropertiesTableCaption } from '../../common-elements/fields-layout';
 import { Field } from '../Fields/Field';
+import { Markdown } from '../Markdown/Markdown';
 import { DiscriminatorDropdown } from './DiscriminatorDropdown';
 import { SchemaProps } from './Schema';
 
@@ -21,7 +22,7 @@ export interface ObjectSchemaProps extends SchemaProps {
 
 export const ObjectSchema = observer(
   ({
-    schema: { fields = [], title },
+    schema: { fields = [], title, description },
     showTitle,
     discriminator,
     skipReadOnly,
@@ -49,7 +50,7 @@ export const ObjectSchema = observer(
     const expandByDefault =
       (expandSingleSchemaField && filteredFields.length === 1) || schemasExpansionLevel >= level!;
 
-    return (
+    const table = (
       <PropertiesTable>
         {showTitle && <PropertiesTableCaption>{title}</PropertiesTableCaption>}
         <tbody>
@@ -83,5 +84,18 @@ export const ObjectSchema = observer(
         </tbody>
       </PropertiesTable>
     );
+
+    // A nested object's description is already shown in its parent field row
+    // (FieldDetails); the top-level schema of a request body, response or
+    // oneOf variant has no such row, so render it here.
+    if (level === 1 && description) {
+      return (
+        <>
+          <Markdown source={description} />
+          {table}
+        </>
+      );
+    }
+    return table;
   },
 );
